@@ -1,0 +1,64 @@
+# .github/workflows/main.yml
+# ═══════════════════════════════════════════════════════════════
+# IDMS — CI/CD Pipeline (ISS-06)
+# Auto-test on Push & Pull Request to branch main
+# ═══════════════════════════════════════════════════════════════
+
+name: IDMS CI — pytest Auto-test
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: Run pytest — All Modules
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Set up Python
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # 3. Install dependencies
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pytest-cov
+
+      # 4. Run pytest — must pass 0 FAILED (AC-5)
+      - name: Run pytest with coverage
+        working-directory: ./idms
+        run: |
+          pytest test_idms.py -v \
+            --tb=short \
+            --cov=space_node \
+            --cov-report=term-missing \
+            --cov-fail-under=80
+
+      # 5. Upload coverage report (optional artifact)
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: idms/.coverage
+
+  # ── Branch Protection Gate ──────────────────────────────────
+  # Merge ไปยัง main ได้ก็ต่อเมื่อ job "test" ผ่านเท่านั้น
+  gate:
+    name: Branch Protection Gate
+    runs-on: ubuntu-latest
+    needs: test
+    if: success()
+    steps:
+      - name: All tests passed — ready to merge
+        run: echo "✅ pytest 0 FAILED — Branch Protection Gate passed"

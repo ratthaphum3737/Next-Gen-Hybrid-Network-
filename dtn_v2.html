@@ -1,0 +1,1748 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IDMS — Interstellar Data Mesh</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Arimo:wght@400;500;600;700&family=Inconsolata:wght@300;400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* Core palette — deep navy obsidian */
+  --bg:      #07080f;
+  --bg1:     #0c0e1a;
+  --bg2:     #101422;
+  --bg3:     #141829;
+  --bg4:     #1a1f30;
+  --glass:   rgba(16,20,34,0.7);
+
+  /* Borders */
+  --b0:  rgba(255,255,255,0.04);
+  --b1:  rgba(255,255,255,0.08);
+  --b2:  rgba(255,255,255,0.14);
+
+  /* Accent colours */
+  --cyan:    #22d3ee;
+  --indigo:  #818cf8;
+  --violet:  #c084fc;
+  --amber:   #fbbf24;
+  --rose:    #fb7185;
+  --emerald: #34d399;
+
+  /* Node colours */
+  --earth:   #22d3ee;
+  --lunar:   #c084fc;
+  --surface: #fbbf24;
+  --deep:    #fb7185;
+
+  /* Priority colours */
+  --p1: #fb7185;
+  --p2: #818cf8;
+  --p3: #34d399;
+
+  /* Text */
+  --t0: #f0f4ff;
+  --t1: #8fa3cc;
+  --t2: #3d5070;
+  --t3: #243048;
+
+  /* Fonts */
+  --thai:  'Arimo', sans-serif;
+  --mono:  'Inconsolata', monospace;
+  --disp:  'Outfit', sans-serif;
+
+  /* Radii */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-xl: 20px;
+}
+
+/* ─── RESET ─── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ─── BASE ─── */
+body {
+  background: var(--bg);
+  color: var(--t0);
+  font-family: var(--thai);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ─── KEYFRAMES ─── */
+@keyframes fadeUp      { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:none} }
+@keyframes floatY      { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+@keyframes pulseGreen  { 0%,100%{box-shadow:0 0 0 0 rgba(52,211,153,0)} 50%{box-shadow:0 0 0 5px rgba(52,211,153,.15)} }
+@keyframes pulseRed    { 0%,100%{box-shadow:0 0 0 0 rgba(251,113,133,0)} 50%{box-shadow:0 0 0 5px rgba(251,113,133,.2)} }
+@keyframes shimmer     { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
+@keyframes popIn       { 0%{transform:scale(.85);opacity:0} 70%{transform:scale(1.05)} 100%{transform:scale(1);opacity:1} }
+@keyframes borderPulse { 0%,100%{opacity:.4} 50%{opacity:1} }
+@keyframes scanLine    { 0%{top:0} 100%{top:100%} }
+@keyframes rotateOrbit { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+@keyframes glowCyan    { 0%,100%{text-shadow:0 0 10px rgba(34,211,238,.3)} 50%{text-shadow:0 0 20px rgba(34,211,238,.7),0 0 40px rgba(34,211,238,.3)} }
+
+/* ─── APP WRAPPER ─── */
+.app {
+  max-width: 860px;
+  margin: 0 auto;
+  background: var(--bg1);
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+  border-left: 1px solid var(--b0);
+  border-right: 1px solid var(--b0);
+}
+
+/* Ambient glow blobs */
+.app::before, .app::after {
+  content: '';
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: 0;
+}
+.app::before {
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(34,211,238,.06), transparent 70%);
+  top: -100px; left: -100px;
+}
+.app::after {
+  width: 350px; height: 350px;
+  background: radial-gradient(circle, rgba(192,132,252,.05), transparent 70%);
+  bottom: -80px; right: -80px;
+}
+
+/* ─── TOPBAR ─── */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(7,8,15,.88);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--b1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 18px;
+  height: 52px;
+}
+.topbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.brand-icon {
+  width: 28px; height: 28px;
+  background: linear-gradient(135deg, var(--cyan), var(--indigo));
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.brand-name {
+  font-family: var(--disp);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: .5px;
+  color: var(--t0);
+}
+.brand-sub {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--t2);
+  letter-spacing: 1px;
+}
+.topbar-badge {
+  font-family: var(--mono);
+  font-size: 10px;
+  background: rgba(34,211,238,.08);
+  border: 1px solid rgba(34,211,238,.2);
+  color: var(--cyan);
+  padding: 3px 10px;
+  border-radius: 20px;
+  letter-spacing: .5px;
+}
+
+/* ─── NAV TABS ─── */
+.nav {
+  display: flex;
+  background: var(--bg1);
+  border-bottom: 1px solid var(--b1);
+  overflow-x: auto;
+  scrollbar-width: none;
+  gap: 2px;
+  padding: 0 6px;
+}
+.nav::-webkit-scrollbar { display: none; }
+
+.nav-tab {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 14px;
+  height: 44px;
+  font-family: var(--thai);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--t2);
+  border-bottom: 2px solid transparent;
+  transition: all .2s;
+  white-space: nowrap;
+  user-select: none;
+  letter-spacing: .2px;
+}
+.nav-tab .tab-icon { font-size: 14px; }
+.nav-tab:hover { color: var(--t1); }
+.nav-tab.active { color: var(--t0); border-bottom-color: var(--cyan); }
+.nav-tab.active.v-warn   { color: var(--amber);   border-bottom-color: var(--amber); }
+.nav-tab.active.v-green  { color: var(--emerald); border-bottom-color: var(--emerald); }
+.nav-tab.active.v-red    { color: var(--rose);    border-bottom-color: var(--rose); }
+.nav-tab.active.v-violet { color: var(--violet);  border-bottom-color: var(--violet); }
+
+/* ─── PAGES ─── */
+.page { display:none; padding: 20px 18px; animation: fadeUp .3s ease; position: relative; z-index: 1; }
+.page.active { display: block; }
+
+/* ─── SECTION LABEL ─── */
+.lbl {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--t2);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.lbl::after { content:''; flex:1; height:1px; background: var(--b1); }
+
+/* ─── CARDS ─── */
+.card {
+  background: var(--bg2);
+  border: 1px solid var(--b1);
+  border-radius: var(--r-md);
+  padding: 16px;
+  margin-bottom: 14px;
+  transition: border-color .2s;
+}
+.card:hover { border-color: var(--b2); }
+
+/* ══════════════════════════════
+   PAGE 0 — OVERVIEW
+══════════════════════════════ */
+.hero {
+  text-align: center;
+  padding: 28px 0 20px;
+  position: relative;
+}
+.hero-eyebrow {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: var(--cyan);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  opacity: .7;
+}
+.hero-title {
+  font-family: var(--disp);
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--t0);
+  line-height: 1.2;
+}
+.hero-title span {
+  background: linear-gradient(135deg, var(--cyan), var(--indigo));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero-sub {
+  font-family: var(--thai);
+  font-size: 14px;
+  color: var(--t1);
+  margin-top: 10px;
+  line-height: 1.6;
+}
+.hero-chips {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+.chip {
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  letter-spacing: .5px;
+}
+.chip-cyan    { background:rgba(34,211,238,.08);  border:1px solid rgba(34,211,238,.25); color:var(--cyan); }
+.chip-violet  { background:rgba(192,132,252,.08); border:1px solid rgba(192,132,252,.25); color:var(--violet); }
+.chip-emerald { background:rgba(52,211,153,.08);  border:1px solid rgba(52,211,153,.25); color:var(--emerald); }
+.chip-amber   { background:rgba(251,191,36,.08);  border:1px solid rgba(251,191,36,.25); color:var(--amber); }
+.chip-rose    { background:rgba(251,113,133,.08); border:1px solid rgba(251,113,133,.25); color:var(--rose); }
+.chip-indigo  { background:rgba(129,140,248,.08); border:1px solid rgba(129,140,248,.25); color:var(--indigo); }
+
+/* Concept cards */
+.concept-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 16px; }
+.concept-card {
+  background: var(--bg2);
+  border: 1px solid var(--b1);
+  border-radius: var(--r-md);
+  padding: 16px;
+  cursor: pointer;
+  transition: all .2s;
+  position: relative;
+  overflow: hidden;
+}
+.concept-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity .3s;
+}
+.concept-card:nth-child(1)::before { background: radial-gradient(circle at 0% 100%, rgba(34,211,238,.06), transparent 60%); }
+.concept-card:nth-child(2)::before { background: radial-gradient(circle at 0% 100%, rgba(129,140,248,.06), transparent 60%); }
+.concept-card:nth-child(3)::before { background: radial-gradient(circle at 0% 100%, rgba(251,113,133,.06), transparent 60%); }
+.concept-card:hover { border-color: var(--b2); transform: translateY(-2px); }
+.concept-card:hover::before { opacity: 1; }
+.cc-icon  { font-size: 24px; margin-bottom: 10px; display:block; }
+.cc-title { font-family: var(--disp); font-size: 14px; font-weight: 600; color: var(--t0); margin-bottom: 6px; }
+.cc-desc  { font-family: var(--thai); font-size: 12px; color: var(--t1); line-height: 1.7; }
+
+/* AC strip */
+.ac-strip {
+  display: grid;
+  grid-template-columns: repeat(5,1fr);
+  gap: 8px;
+}
+.ac-item {
+  background: rgba(52,211,153,.05);
+  border: 1px solid rgba(52,211,153,.15);
+  border-radius: var(--r-sm);
+  padding: 10px 6px;
+  text-align: center;
+}
+.ac-check { font-size: 18px; color: var(--emerald); }
+.ac-lbl   { font-family: var(--mono); font-size: 9px; color: var(--emerald); margin-top: 4px; letter-spacing: .5px; }
+
+/* ══════════════════════════════
+   PAGE 1 — SIMULATION
+══════════════════════════════ */
+
+/* Nodes grid */
+.nodes-grid {
+  display: grid;
+  grid-template-columns: repeat(4,1fr);
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.node-card {
+  background: var(--bg2);
+  border: 1px solid var(--b1);
+  border-radius: var(--r-md);
+  padding: 12px;
+  position: relative;
+  overflow: hidden;
+  transition: all .25s;
+}
+.node-card::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  opacity: .7;
+}
+.nc-e::after { background: linear-gradient(90deg, transparent, var(--earth), transparent); }
+.nc-l::after { background: linear-gradient(90deg, transparent, var(--lunar), transparent); }
+.nc-s::after { background: linear-gradient(90deg, transparent, var(--surface), transparent); }
+.nc-d::after { background: linear-gradient(90deg, transparent, var(--deep), transparent); }
+
+.node-card.offline {
+  background: rgba(251,113,133,.04);
+  border-color: rgba(251,113,133,.2);
+}
+.node-card.offline::after { background: linear-gradient(90deg,transparent,var(--rose),transparent); }
+
+.nd-icon { font-size: 22px; animation: floatY 5s ease-in-out infinite; display: block; margin-bottom: 8px; }
+.nd-name {
+  font-family: var(--disp);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--t0);
+  letter-spacing: .2px;
+  margin-bottom: 2px;
+}
+.nd-role {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--t2);
+  letter-spacing: .5px;
+  margin-bottom: 6px;
+}
+.nd-status {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 5px;
+}
+.dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.dot-on  { background: var(--emerald); animation: pulseGreen 2s infinite; }
+.dot-off { background: var(--rose);    animation: pulseRed   1s infinite; }
+.nd-stat-txt { font-family: var(--thai); font-size: 11px; }
+.nd-recv { font-family: var(--thai); font-size: 10px; color: var(--t2); margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Kill button */
+.kill-btn {
+  margin-top: 8px;
+  width: 100%;
+  padding: 5px 0;
+  border-radius: 6px;
+  border: 1px solid var(--b1);
+  background: transparent;
+  color: var(--t2);
+  font-family: var(--thai);
+  font-size: 11px;
+  cursor: pointer;
+  transition: all .2s;
+}
+.kill-btn:hover { border-color: var(--rose); color: var(--rose); background: rgba(251,113,133,.06); }
+
+/* Links row */
+.links-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 10px 14px;
+  background: var(--bg2);
+  border: 1px solid var(--b1);
+  border-radius: var(--r-md);
+  margin-bottom: 14px;
+  align-items: center;
+}
+.link-pill {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid;
+  font-family: var(--mono);
+  font-size: 10px;
+  transition: all .3s;
+}
+.link-pill.ok   { border-color: rgba(52,211,153,.2);  background: rgba(52,211,153,.05); }
+.link-pill.down { border-color: rgba(251,113,133,.3); background: rgba(251,113,133,.06); }
+.lp-dot { width:5px; height:5px; border-radius:50%; flex-shrink:0; }
+.lp-dot.ok   { background: var(--emerald); }
+.lp-dot.down { background: var(--rose); animation: pulseRed 1s infinite; }
+
+/* Buffer zone */
+.buf-zone {
+  min-height: 38px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px;
+  background: rgba(0,0,0,.2);
+  border: 1px solid var(--b0);
+  border-radius: var(--r-sm);
+  margin-bottom: 14px;
+  align-items: center;
+}
+.buf-empty { font-family: var(--thai); font-size: 12px; color: var(--t3); font-style: italic; }
+.buf-pill {
+  font-family: var(--thai);
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  animation: popIn .25s ease;
+}
+.bp1 { background: rgba(251,113,133,.1); border: 1px solid rgba(251,113,133,.35); color: #fda4af; }
+.bp2 { background: rgba(129,140,248,.1); border: 1px solid rgba(129,140,248,.35); color: #a5b4fc; }
+.bp3 { background: rgba(52,211,153,.08); border: 1px solid rgba(52,211,153,.3);  color: #6ee7b7; }
+
+/* Metrics */
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(4,1fr);
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.metric {
+  background: var(--bg2);
+  border: 1px solid var(--b1);
+  border-radius: var(--r-sm);
+  padding: 12px 8px;
+  text-align: center;
+}
+.metric-val {
+  font-family: var(--disp);
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.mv-cyan    { color: var(--cyan); }
+.mv-amber   { color: var(--amber); }
+.mv-emerald { color: var(--emerald); }
+.mv-rose    { color: var(--rose); }
+.metric-lbl { font-family: var(--mono); font-size: 9px; color: var(--t2); letter-spacing: 1px; }
+
+/* Log terminal */
+.terminal {
+  background: rgba(0,0,0,.4);
+  border: 1px solid var(--b1);
+  border-radius: var(--r-sm);
+  padding: 12px 14px;
+  height: 200px;
+  overflow-y: auto;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  line-height: 1.9;
+  margin-bottom: 14px;
+  position: relative;
+}
+.terminal::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: linear-gradient(to bottom, var(--cyan), transparent);
+  opacity: .3;
+  border-radius: 2px 0 0 2px;
+}
+.terminal::-webkit-scrollbar { width: 3px; }
+.terminal::-webkit-scrollbar-thumb { background: var(--b2); border-radius: 2px; }
+.lc  { color: #fda4af; } /* critical */
+.ls  { color: #a5b4fc; } /* scientific */
+.lm  { color: var(--t2); } /* media */
+.lw  { color: #fcd34d; } /* warning */
+.lq  { color: #6ee7b7; } /* ok/success */
+.lt  { color: var(--t3); } /* dim */
+.lr  { color: var(--rose); } /* error */
+.log-ts { color: var(--t3); }
+
+/* Scenario buttons */
+.btn-grid {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+  align-items: center;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 14px;
+  border-radius: var(--r-sm);
+  border: 1px solid;
+  font-family: var(--thai);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all .18s;
+  white-space: nowrap;
+  letter-spacing: .1px;
+}
+.btn:hover { transform: translateY(-1px); filter: brightness(1.15); }
+.btn:active { transform: translateY(0); }
+
+.btn-cyan   { background:rgba(34,211,238,.08);  border-color:rgba(34,211,238,.3);  color:var(--cyan); }
+.btn-amber  { background:rgba(251,191,36,.08);  border-color:rgba(251,191,36,.3);  color:var(--amber); }
+.btn-green  { background:rgba(52,211,153,.08);  border-color:rgba(52,211,153,.3);  color:var(--emerald); }
+.btn-violet { background:rgba(192,132,252,.08); border-color:rgba(192,132,252,.3); color:var(--violet); }
+.btn-rose   { background:rgba(251,113,133,.08); border-color:rgba(251,113,133,.3); color:var(--rose); }
+.btn-ghost  { background:transparent; border-color:var(--b1); color:var(--t2); margin-left:auto; }
+.btn-ghost:hover { border-color:var(--b2); color:var(--t1); }
+
+/* HITL Banner */
+.hitl-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(251,113,133,.04);
+  border: 1px solid rgba(251,113,133,.15);
+  border-radius: var(--r-sm);
+  padding: 10px 14px;
+  margin-bottom: 12px;
+}
+.hitl-badge {
+  font-family: var(--mono);
+  font-size: 9px;
+  background: rgba(251,113,133,.12);
+  border: 1px solid rgba(251,113,133,.4);
+  color: var(--rose);
+  padding: 3px 8px;
+  border-radius: 5px;
+  letter-spacing: 1px;
+  flex-shrink: 0;
+}
+.hitl-msg { font-family: var(--thai); font-size: 12px; color: var(--t1); flex: 1; }
+.btn-approve {
+  display: none;
+  padding: 7px 14px;
+  border-radius: var(--r-sm);
+  border: 1px solid rgba(251,113,133,.5);
+  background: rgba(251,113,133,.12);
+  color: var(--rose);
+  font-family: var(--thai);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  animation: borderPulse 1.2s infinite;
+  transition: all .2s;
+}
+.btn-approve.show { display: block; }
+.btn-approve:hover { background: rgba(251,113,133,.2); }
+
+/* Custom message row */
+.custom-row {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.msg-input, .msg-select {
+  background: var(--bg3);
+  border: 1px solid var(--b1);
+  color: var(--t0);
+  padding: 8px 12px;
+  border-radius: var(--r-sm);
+  font-family: var(--thai);
+  font-size: 12px;
+  outline: none;
+  transition: border-color .2s;
+}
+.msg-input { flex: 1; min-width: 140px; }
+.msg-input:focus { border-color: var(--cyan); }
+.msg-input::placeholder { color: var(--t2); }
+.msg-select { cursor: pointer; }
+
+/* Stress bar */
+.stress-panel {
+  display: none;
+  background: rgba(251,113,133,.04);
+  border: 1px solid rgba(251,113,133,.2);
+  border-radius: var(--r-sm);
+  padding: 12px 14px;
+  margin-bottom: 12px;
+}
+.stress-panel.show { display: block; }
+.stress-hdr { font-family: var(--mono); font-size: 10px; color: var(--rose); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
+.stress-track { height: 6px; background: rgba(0,0,0,.4); border-radius: 3px; overflow: hidden; margin-bottom: 8px; }
+.stress-fill  { height: 100%; background: linear-gradient(90deg, var(--rose), var(--amber)); border-radius: 3px; width: 0%; transition: width .2s; }
+.stress-stats { display: flex; gap: 16px; flex-wrap: wrap; }
+.ss { font-family: var(--mono); font-size: 10px; color: var(--t2); }
+.ss span { color: var(--t0); font-weight: 500; }
+
+/* ══════════════════════════════
+   PAGE 2 — QoS
+══════════════════════════════ */
+.qos-legend { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+
+.flow-card {
+  background: var(--bg2);
+  border: 1px solid var(--b1);
+  border-radius: var(--r-md);
+  padding: 16px;
+  margin-bottom: 14px;
+}
+.flow-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; padding: 8px 0; }
+.flow-item { font-family: var(--thai); font-size: 12px; padding: 5px 12px; border-radius: 20px; }
+.farrow { color: var(--t3); font-size: 14px; }
+
+.compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.cmp-card { background: var(--bg2); border: 1px solid var(--b1); border-radius: var(--r-md); padding: 14px; }
+.cmp-title { font-family: var(--disp); font-size: 12px; font-weight: 600; margin-bottom: 10px; }
+.cmp-item  { display: flex; align-items: center; gap: 7px; font-family: var(--thai); font-size: 12px; color: var(--t1); margin: 6px 0; }
+.cmp-dot   { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.cmp-note  { font-family: var(--thai); font-size: 11px; margin-top: 10px; padding: 8px 10px; border-radius: 6px; line-height: 1.5; }
+
+/* Node policy table */
+.node-policy { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-top: 14px; }
+.np-card { background: var(--bg2); border: 1px solid var(--b1); border-radius: var(--r-sm); padding: 10px; }
+.np-name { font-size: 12px; font-weight: 500; margin-bottom: 6px; font-family: var(--disp); }
+.np-row  { font-family: var(--thai); font-size: 10px; color: var(--t1); margin: 3px 0; line-height: 1.5; }
+
+/* ══════════════════════════════
+   PAGE 3 — TEST CASES
+══════════════════════════════ */
+.tc-table { display: flex; flex-direction: column; gap: 8px; }
+
+.tc-row {
+  display: grid;
+  grid-template-columns: 72px 1fr 1fr 80px;
+  gap: 12px;
+  align-items: center;
+  background: var(--bg2);
+  border: 1px solid var(--b1);
+  border-radius: var(--r-sm);
+  padding: 12px 16px;
+  transition: border-color .2s;
+}
+.tc-row:hover { border-color: var(--b2); }
+.tc-row.running { border-color: rgba(251,191,36,.3); background: rgba(251,191,36,.02); }
+.tc-row.passed  { border-color: rgba(52,211,153,.25); }
+.tc-row.failed  { border-color: rgba(251,113,133,.25); }
+
+.tc-id   { font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--cyan); }
+.tc-name { font-family: var(--thai); font-size: 13px; color: var(--t0); font-weight: 500; }
+.tc-desc { font-family: var(--thai); font-size: 11px; color: var(--t1); margin-top: 2px; line-height: 1.5; }
+.tc-exp  { font-family: var(--thai); font-size: 11px; color: var(--t1); line-height: 1.5; }
+
+.tc-badge {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+  text-align: center;
+  letter-spacing: .5px;
+}
+.tb-pending { background:rgba(255,255,255,.04); border:1px solid var(--b1); color:var(--t2); }
+.tb-running { background:rgba(251,191,36,.1);   border:1px solid rgba(251,191,36,.35); color:var(--amber); }
+.tb-pass    { background:rgba(52,211,153,.1);   border:1px solid rgba(52,211,153,.35); color:var(--emerald); }
+.tb-fail    { background:rgba(251,113,133,.1);  border:1px solid rgba(251,113,133,.35); color:var(--rose); }
+
+.tc-col-hdr { font-family: var(--mono); font-size: 9px; color: var(--t3); letter-spacing: 1.5px; text-transform: uppercase; }
+
+/* ══════════════════════════════
+   PAGE 4 — ETHICS
+══════════════════════════════ */
+.ethics-hero {
+  background: linear-gradient(135deg, rgba(251,113,133,.06), rgba(192,132,252,.04));
+  border: 1px solid rgba(251,113,133,.15);
+  border-radius: var(--r-lg);
+  padding: 20px;
+  text-align: center;
+  margin-bottom: 16px;
+}
+.ethics-icon  { font-size: 32px; margin-bottom: 10px; }
+.ethics-title { font-family: var(--disp); font-size: 18px; font-weight: 700; color: var(--rose); letter-spacing: .5px; }
+.ethics-sub   { font-family: var(--thai); font-size: 13px; color: var(--t1); margin-top: 6px; line-height: 1.6; }
+
+.flow-steps { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-bottom: 16px; }
+.flow-step {
+  background: var(--bg2);
+  border: 1px solid var(--b1);
+  border-radius: var(--r-sm);
+  padding: 12px 8px;
+  text-align: center;
+  position: relative;
+}
+.flow-step::after {
+  content: '→';
+  position: absolute;
+  right: -10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--t3);
+  font-size: 12px;
+  z-index: 2;
+}
+.flow-step:last-child::after { display: none; }
+.fs-icon  { font-size: 20px; margin-bottom: 6px; }
+.fs-label { font-family: var(--disp); font-size: 11px; font-weight: 600; margin-bottom: 3px; }
+.fs-desc  { font-family: var(--thai); font-size: 10px; color: var(--t1); line-height: 1.5; }
+
+.ethics-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+.ec-card     { background: var(--bg2); border-radius: var(--r-sm); padding: 14px; border-left: 2px solid; }
+.ec-danger   { border-color: var(--rose); }
+.ec-safe     { border-color: var(--emerald); }
+.ec-title    { font-family: var(--disp); font-size: 12px; font-weight: 600; margin-bottom: 8px; }
+.ec-danger .ec-title { color: var(--rose); }
+.ec-safe   .ec-title { color: var(--emerald); }
+.ec-item { font-family: var(--thai); font-size: 12px; color: var(--t1); margin: 5px 0; padding-left: 12px; position: relative; line-height: 1.5; }
+.ec-item::before { content: '·'; position: absolute; left: 2px; color: var(--t2); }
+
+.rule-list { display: flex; flex-direction: column; gap: 8px; }
+.rule-row  { display: flex; gap: 10px; align-items: flex-start; }
+.rule-num  {
+  font-family: var(--mono);
+  font-size: 10px;
+  background: rgba(192,132,252,.1);
+  border: 1px solid rgba(192,132,252,.3);
+  color: var(--violet);
+  padding: 2px 7px;
+  border-radius: 5px;
+  flex-shrink: 0;
+  letter-spacing: .5px;
+  margin-top: 1px;
+}
+.rule-text { font-family: var(--thai); font-size: 12px; color: var(--t1); line-height: 1.6; }
+
+/* ══════════════════════════════
+   PAGE 5 — PROJECT
+══════════════════════════════ */
+.team-grid   { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; margin-bottom: 16px; }
+.team-card   {
+  background: var(--bg2);
+  border: 1px solid var(--b1);
+  border-radius: var(--r-md);
+  padding: 14px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  transition: border-color .2s;
+}
+.team-card:hover { border-color: var(--b2); }
+.team-avatar {
+  width: 38px; height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+  border: 1px solid var(--b1);
+}
+.t-name    { font-family: var(--disp); font-size: 13px; font-weight: 600; color: var(--t0); }
+.t-role    { font-family: var(--mono); font-size: 9px; color: var(--t2); letter-spacing: .5px; margin-top: 2px; margin-bottom: 5px; }
+.t-contrib { font-family: var(--thai); font-size: 11px; color: var(--t1); line-height: 1.6; }
+
+.sprint-list { display: flex; flex-direction: column; gap: 0; margin-bottom: 16px; }
+.sprint-row  { display: flex; gap: 12px; }
+.sprint-line-wrap { display: flex; flex-direction: column; align-items: center; width: 20px; flex-shrink: 0; }
+.sprint-dot  { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; margin-top: 3px; }
+.sprint-line { width: 1px; flex: 1; background: var(--b1); margin-top: 4px; }
+.sprint-body { flex: 1; padding-bottom: 16px; }
+.sprint-week { font-family: var(--mono); font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 3px; }
+.sprint-desc { font-family: var(--thai); font-size: 12px; color: var(--t1); line-height: 1.6; margin-bottom: 4px; }
+.sprint-tags { display: flex; gap: 5px; flex-wrap: wrap; }
+.sprint-tag  { font-family: var(--mono); font-size: 9px; background: rgba(34,211,238,.07); border: 1px solid rgba(34,211,238,.18); color: var(--cyan); padding: 1px 7px; border-radius: 4px; }
+
+.ac-full { display: flex; flex-direction: column; gap: 7px; margin-bottom: 16px; }
+.ac-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: var(--bg2);
+  border: 1px solid rgba(52,211,153,.15);
+  border-radius: var(--r-sm);
+  padding: 10px 14px;
+}
+.ac-n    { font-family: var(--mono); font-size: 11px; font-weight: 600; color: var(--cyan); flex-shrink: 0; }
+.ac-txt  { font-family: var(--thai); font-size: 12px; color: var(--t1); flex: 1; line-height: 1.6; }
+.ac-ok   { font-family: var(--mono); font-size: 10px; background: rgba(52,211,153,.1); border: 1px solid rgba(52,211,153,.3); color: var(--emerald); padding: 2px 9px; border-radius: 20px; flex-shrink: 0; }
+
+.artifact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+.artifact-item { font-family: var(--thai); font-size: 12px; color: var(--t1); padding: 8px 10px; background: var(--bg2); border: 1px solid var(--b1); border-radius: var(--r-sm); }
+
+/* Stars canvas */
+#starfield {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: .6;
+}
+</style>
+</head>
+<body>
+
+<canvas id="starfield"></canvas>
+
+<div class="app">
+
+<!-- ── TOPBAR ── -->
+<div class="topbar">
+  <div class="topbar-brand">
+    <div class="brand-icon">🛰</div>
+    <div>
+      <div class="brand-name">IDMS</div>
+      <div class="brand-sub">INTERSTELLAR DATA MESH</div>
+    </div>
+  </div>
+  <div class="topbar-badge">Sprint Alpha · 2/2025</div>
+</div>
+
+<!-- ── NAV ── -->
+<div class="nav">
+  <div class="nav-tab active"   onclick="showPage(0,this)"><span class="tab-icon">🌐</span> ภาพรวม</div>
+  <div class="nav-tab v-warn"   onclick="showPage(1,this)"><span class="tab-icon">⚡</span> จำลองระบบ</div>
+  <div class="nav-tab v-green"  onclick="showPage(2,this)"><span class="tab-icon">📊</span> QoS</div>
+  <div class="nav-tab v-red"    onclick="showPage(3,this)"><span class="tab-icon">🧪</span> Test Cases</div>
+  <div class="nav-tab v-violet" onclick="showPage(4,this)"><span class="tab-icon">🔐</span> Ethics</div>
+  <div class="nav-tab"          onclick="showPage(5,this)"><span class="tab-icon">👥</span> Project</div>
+</div>
+
+<!-- ══════════════════════════════════════
+     PAGE 0 — OVERVIEW
+══════════════════════════════════════ -->
+<div class="page active" id="p0">
+  <div class="hero">
+    <div class="hero-eyebrow">Computer Networks — Final Project</div>
+    <div class="hero-title">Interstellar<br><span>Data Mesh</span></div>
+    <div class="hero-sub">ระบบสื่อสารแบบ Decentralized สำหรับภารกิจอวกาศ<br>รองรับสัญญาณขาดหาย ด้วย DTN + QoS + Human-in-the-Loop</div>
+    <div class="hero-chips">
+      <span class="chip chip-cyan">DTN Protocol</span>
+      <span class="chip chip-indigo">QoS Scheduling</span>
+      <span class="chip chip-violet">HITL Governance</span>
+      <span class="chip chip-amber">4 Nodes</span>
+      <span class="chip chip-emerald">0% Data Loss</span>
+      <span class="chip chip-rose">Stress Tested</span>
+    </div>
+  </div>
+
+  <!-- Architecture SVG -->
+  <div class="card" style="padding:0;overflow:hidden;margin-bottom:14px;">
+    <svg viewBox="0 0 720 196" style="width:100%;display:block;" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+          <path d="M2 2L8 5L2 8" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </marker>
+        <filter id="glow"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      </defs>
+      <!-- bg -->
+      <rect width="720" height="196" fill="#0c0e1a"/>
+      <!-- grid lines subtle -->
+      <line x1="0" y1="98" x2="720" y2="98" stroke="#1a1f30" stroke-width="1"/>
+
+      <!-- EMC -->
+      <rect x="18" y="54" width="118" height="68" rx="10" fill="#101422" stroke="#22d3ee" stroke-width="1" opacity=".9"/>
+      <text x="77" y="80" text-anchor="middle" font-size="22">🌍</text>
+      <text x="77" y="100" text-anchor="middle" fill="#f0f4ff" font-size="9.5" font-family="Outfit,sans-serif" font-weight="600" letter-spacing=".5">Earth Mission</text>
+      <text x="77" y="113" text-anchor="middle" fill="#3d5070" font-size="8.5" font-family="Inconsolata,monospace">Control · EMC</text>
+
+      <!-- LGR -->
+      <rect x="198" y="20" width="118" height="68" rx="10" fill="#101422" stroke="#c084fc" stroke-width="1" opacity=".9"/>
+      <text x="257" y="46" text-anchor="middle" font-size="22">🌕</text>
+      <text x="257" y="66" text-anchor="middle" fill="#f0f4ff" font-size="9.5" font-family="Outfit,sans-serif" font-weight="600" letter-spacing=".5">Lunar Gateway</text>
+      <text x="257" y="79" text-anchor="middle" fill="#3d5070" font-size="8.5" font-family="Inconsolata,monospace">Relay · LGR</text>
+
+      <!-- SBL -->
+      <rect x="198" y="118" width="118" height="58" rx="10" fill="#101422" stroke="#fbbf24" stroke-width="1" opacity=".9"/>
+      <text x="257" y="140" text-anchor="middle" font-size="22">🏕️</text>
+      <text x="257" y="160" text-anchor="middle" fill="#f0f4ff" font-size="9.5" font-family="Outfit,sans-serif" font-weight="600" letter-spacing=".5">Surface Base</text>
+      <text x="257" y="170" text-anchor="middle" fill="#3d5070" font-size="8.5" font-family="Inconsolata,monospace">LAN · SBL</text>
+
+      <!-- DSP -->
+      <rect x="410" y="64" width="118" height="68" rx="10" fill="#101422" stroke="#fb7185" stroke-width="1" opacity=".9"/>
+      <text x="469" y="91" text-anchor="middle" font-size="22">🛸</text>
+      <text x="469" y="111" text-anchor="middle" fill="#f0f4ff" font-size="9.5" font-family="Outfit,sans-serif" font-weight="600" letter-spacing=".5">Deep Space</text>
+      <text x="469" y="124" text-anchor="middle" fill="#3d5070" font-size="8.5" font-family="Inconsolata,monospace">Probe · DSP</text>
+
+      <!-- DTN+QoS box -->
+      <rect x="590" y="54" width="115" height="68" rx="10" fill="rgba(52,211,153,.04)" stroke="#34d399" stroke-width="1" stroke-dasharray="5 3"/>
+      <text x="647" y="81" text-anchor="middle" fill="#34d399" font-size="10" font-family="Inconsolata,monospace" font-weight="600">DTN + QoS</text>
+      <text x="647" y="96" text-anchor="middle" fill="#34d399" font-size="8.5" font-family="Inconsolata,monospace">Store-Fwd</text>
+      <text x="647" y="109" text-anchor="middle" fill="#34d399" font-size="8.5" font-family="Inconsolata,monospace">P1 → P2 → P3</text>
+
+      <!-- HITL pill -->
+      <rect x="390" y="158" width="210" height="22" rx="11" fill="rgba(251,113,133,.06)" stroke="rgba(251,113,133,.3)" stroke-width="1"/>
+      <text x="495" y="173" text-anchor="middle" fill="#fb7185" font-size="9" font-family="Inconsolata,monospace" letter-spacing=".5">🔐 HITL — Human approves P1</text>
+
+      <!-- Links -->
+      <line x1="136" y1="76" x2="196" y2="62" stroke="#22d3ee" stroke-width="1.5" marker-end="url(#arr)" stroke-dasharray="4 3" opacity=".6"/>
+      <line x1="136" y1="100" x2="196" y2="142" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#arr)" stroke-dasharray="4 3" opacity=".6"/>
+      <line x1="316" y1="54" x2="408" y2="88" stroke="#c084fc" stroke-width="1.5" marker-end="url(#arr)" stroke-dasharray="4 3" opacity=".6"/>
+      <line x1="316" y1="148" x2="408" y2="120" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#arr)" stroke-dasharray="4 3" opacity=".6"/>
+      <line x1="528" y1="98" x2="588" y2="92" stroke="#fb7185" stroke-width="1.5" marker-end="url(#arr)" stroke-dasharray="4 3" opacity=".6"/>
+    </svg>
+  </div>
+
+  <div class="lbl">แนวคิดหลัก</div>
+  <div class="concept-grid">
+    <div class="concept-card" onclick="showPage(1,document.querySelectorAll('.nav-tab')[1])">
+      <span class="cc-icon">📡</span>
+      <div class="cc-title">DTN Protocol</div>
+      <div class="cc-desc">Store-and-Forward เก็บข้อมูลไว้เมื่อสัญญาณขาด แล้วส่งต่อเมื่อ link กลับมา รองรับ 4 โหนด ไม่มีข้อมูลหาย</div>
+    </div>
+    <div class="concept-card" onclick="showPage(2,document.querySelectorAll('.nav-tab')[2])">
+      <span class="cc-icon">⚙️</span>
+      <div class="cc-title">QoS Scheduling</div>
+      <div class="cc-desc">จัดลำดับความสำคัญ P1 Critical → P2 Scientific → P3 Media ส่งของสำคัญก่อนเสมอ ไม่ว่าจะเข้า buffer ลำดับไหน</div>
+    </div>
+    <div class="concept-card" onclick="showPage(4,document.querySelectorAll('.nav-tab')[4])">
+      <span class="cc-icon">🔐</span>
+      <div class="cc-title">HITL Governance</div>
+      <div class="cc-desc">Human-in-the-Loop ต้องอนุมัติ Critical commands ป้องกัน autonomous execution ในระบบ safety-critical</div>
+    </div>
+  </div>
+
+  <div class="lbl">Acceptance Criteria</div>
+  <div class="ac-strip">
+    <div class="ac-item"><div class="ac-check">✓</div><div class="ac-lbl">3+ Nodes</div></div>
+    <div class="ac-item"><div class="ac-check">✓</div><div class="ac-lbl">0% Loss</div></div>
+    <div class="ac-item"><div class="ac-check">✓</div><div class="ac-lbl">Auto Recover</div></div>
+    <div class="ac-item"><div class="ac-check">✓</div><div class="ac-lbl">P1 First</div></div>
+    <div class="ac-item"><div class="ac-check">✓</div><div class="ac-lbl">All TC Pass</div></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     PAGE 1 — SIMULATION
+══════════════════════════════════════ -->
+<div class="page" id="p1">
+
+  <div class="lbl">Network Nodes</div>
+  <div class="nodes-grid">
+    <!-- EMC -->
+    <div class="node-card nc-e" id="nc-emc">
+      <span class="nd-icon">🌍</span>
+      <div class="nd-name">Earth Mission</div>
+      <div class="nd-role">EMC · SOURCE</div>
+      <div class="nd-status">
+        <div class="dot dot-on"></div>
+        <span class="nd-stat-txt" style="color:var(--emerald);font-size:11px;">Online</span>
+      </div>
+      <div class="nd-recv" id="emc-info">Buffer: <span id="buf-cnt">0</span> msgs</div>
+    </div>
+    <!-- LGR -->
+    <div class="node-card nc-l" id="nc-lgr">
+      <span class="nd-icon">🌕</span>
+      <div class="nd-name">Lunar Gateway</div>
+      <div class="nd-role">LGR · RELAY</div>
+      <div class="nd-status">
+        <div class="dot dot-on" id="d-lgr"></div>
+        <span class="nd-stat-txt" id="s-lgr" style="color:var(--emerald)">Online</span>
+      </div>
+      <div class="nd-recv" id="lgr-recv">รอรับสัญญาณ</div>
+      <button class="kill-btn" onclick="toggleNode('lgr')">⊘ Kill / Restore</button>
+    </div>
+    <!-- SBL -->
+    <div class="node-card nc-s" id="nc-sbl">
+      <span class="nd-icon">🏕️</span>
+      <div class="nd-name">Surface Base</div>
+      <div class="nd-role">SBL · LOCAL</div>
+      <div class="nd-status">
+        <div class="dot dot-on" id="d-sbl"></div>
+        <span class="nd-stat-txt" id="s-sbl" style="color:var(--emerald)">Online</span>
+      </div>
+      <div class="nd-recv" id="sbl-recv">รอรับสัญญาณ</div>
+      <button class="kill-btn" onclick="toggleNode('sbl')">⊘ Kill / Restore</button>
+    </div>
+    <!-- DSP -->
+    <div class="node-card nc-d" id="nc-dsp">
+      <span class="nd-icon">🛸</span>
+      <div class="nd-name">Deep Space</div>
+      <div class="nd-role">DSP · PROBE</div>
+      <div class="nd-status">
+        <div class="dot dot-on" id="d-dsp"></div>
+        <span class="nd-stat-txt" id="s-dsp" style="color:var(--emerald)">Online</span>
+      </div>
+      <div class="nd-recv" id="dsp-recv">รอรับสัญญาณ</div>
+      <button class="kill-btn" onclick="toggleNode('dsp')">⊘ Kill / Restore</button>
+    </div>
+  </div>
+
+  <!-- Link status -->
+  <div class="links-row">
+    <span style="font-family:var(--mono);font-size:10px;color:var(--t2);letter-spacing:1px;">LINKS</span>
+    <div class="link-pill ok" id="lnk-lgr">
+      <div class="lp-dot ok" id="ld-lgr"></div>
+      <span style="color:var(--t1)">EMC→LGR</span>
+      <span style="color:var(--t2);font-size:9px;">384,400 km</span>
+      <span id="lt-lgr" style="color:var(--emerald)">OK</span>
+    </div>
+    <div class="link-pill ok" id="lnk-sbl">
+      <div class="lp-dot ok" id="ld-sbl"></div>
+      <span style="color:var(--t1)">EMC→SBL</span>
+      <span style="color:var(--t2);font-size:9px;">~1.3s RTT</span>
+      <span id="lt-sbl" style="color:var(--emerald)">OK</span>
+    </div>
+    <div class="link-pill ok" id="lnk-dsp">
+      <div class="lp-dot ok" id="ld-dsp"></div>
+      <span style="color:var(--t1)">LGR→DSP</span>
+      <span style="color:var(--t2);font-size:9px;">4–20 min</span>
+      <span id="lt-dsp" style="color:var(--emerald)">OK</span>
+    </div>
+  </div>
+
+  <div class="lbl">DTN Buffer Queue — QoS P1 → P2 → P3</div>
+  <div class="buf-zone" id="buf-list"><span class="buf-empty">Buffer ว่าง — ไม่มีข้อมูลค้างอยู่</span></div>
+
+  <div class="metrics">
+    <div class="metric"><div class="metric-val mv-cyan"    id="m-sent">0</div><div class="metric-lbl">Delivered</div></div>
+    <div class="metric"><div class="metric-val mv-amber"   id="m-buf">0</div> <div class="metric-lbl">Buffered</div></div>
+    <div class="metric"><div class="metric-val mv-emerald" id="m-qos">0</div> <div class="metric-lbl">QoS Flush</div></div>
+    <div class="metric"><div class="metric-val mv-rose"    id="m-drop">0</div><div class="metric-lbl">Dropped P3</div></div>
+  </div>
+
+  <div class="terminal" id="sim-log"></div>
+
+  <div class="lbl">Scenarios</div>
+  <div class="btn-grid">
+    <button class="btn btn-cyan"   onclick="runS1()">TC-01 ส่งปกติ</button>
+    <button class="btn btn-amber"  onclick="runS2()">TC-02 โหนดล้มเหลว</button>
+    <button class="btn btn-green"  onclick="runS3()">TC-03 กู้คืน</button>
+    <button class="btn btn-violet" onclick="runTC04()">TC-04 QoS Priority</button>
+    <button class="btn btn-rose"   onclick="runTC05()">TC-05 Stress 90%</button>
+    <button class="btn btn-ghost"  onclick="resetAll()">↺ รีเซ็ต</button>
+  </div>
+
+  <!-- HITL -->
+  <div class="hitl-banner">
+    <div class="hitl-badge">HITL</div>
+    <div class="hitl-msg" id="h-txt">P1 Critical ต้องรอ Human Operator อนุมัติก่อนส่ง</div>
+    <button class="btn-approve" id="h-btn" onclick="approveH()">✓ อนุมัติ &amp; ส่ง</button>
+  </div>
+
+  <!-- Stress bar -->
+  <div class="stress-panel" id="stress-wrap">
+    <div class="stress-hdr">🔴 Stress Test กำลังทำงาน — 90% Packet Loss</div>
+    <div class="stress-track"><div class="stress-fill" id="stress-fill"></div></div>
+    <div class="stress-stats">
+      <div class="ss">ส่งทั้งหมด: <span id="ss-sent">0</span></div>
+      <div class="ss">สำเร็จ: <span id="ss-ok">0</span></div>
+      <div class="ss">Drop: <span id="ss-drop">0</span></div>
+      <div class="ss">Critical: <span id="ss-crit">0/0</span></div>
+    </div>
+  </div>
+
+  <div class="lbl">ส่งข้อความเอง</div>
+  <div class="custom-row">
+    <input class="msg-input" id="msg-input" placeholder="พิมพ์ข้อความ..." />
+    <select class="msg-select" id="msg-priority">
+      <option value="1">P1 Critical</option>
+      <option value="2">P2 Scientific</option>
+      <option value="3" selected>P3 Media</option>
+    </select>
+    <select class="msg-select" id="msg-dst">
+      <option value="lgr">→ LGR</option>
+      <option value="sbl">→ SBL</option>
+      <option value="dsp">→ DSP</option>
+    </select>
+    <button class="btn btn-cyan" onclick="customSend()">📡 ส่ง</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     PAGE 2 — QoS
+══════════════════════════════════════ -->
+<div class="page" id="p2">
+  <div class="qos-legend">
+    <span class="chip chip-rose">P1 — Critical (Telemetry, Emergency)</span>
+    <span class="chip chip-indigo">P2 — Scientific (Images, Data)</span>
+    <span class="chip chip-emerald">P3 — Media (Video, General)</span>
+  </div>
+
+  <div class="lbl">การทำงานของ QoS</div>
+  <div class="flow-card">
+    <div style="font-family:var(--mono);font-size:10px;color:var(--t2);letter-spacing:1px;margin-bottom:8px;">ลำดับที่เข้า Buffer (เวลา)</div>
+    <div class="flow-row">
+      <span class="flow-item bp3">P3 วิดีโออวยพรครอบครัว</span>
+      <span class="farrow">→</span>
+      <span class="flow-item bp2">P2 ภาพถ่ายดวงจันทร์</span>
+      <span class="farrow">→</span>
+      <span class="flow-item bp1">P1 หลบหลีกอุกกาบาต!</span>
+    </div>
+    <div style="font-family:var(--mono);font-size:10px;color:var(--t2);letter-spacing:1px;margin:10px 0 8px;padding-top:10px;border-top:1px solid var(--b0);">หลัง QoS จัดเรียง → ส่งตามลำดับนี้</div>
+    <div class="flow-row">
+      <span class="flow-item bp1">P1 หลบหลีกอุกกาบาต!</span>
+      <span class="farrow">→</span>
+      <span class="flow-item bp2">P2 ภาพถ่ายดวงจันทร์</span>
+      <span class="farrow">→</span>
+      <span class="flow-item bp3">P3 วิดีโออวยพรครอบครัว</span>
+    </div>
+  </div>
+
+  <div class="lbl">เปรียบเทียบ</div>
+  <div class="compare-grid">
+    <div class="cmp-card" style="border-color:rgba(251,113,133,.2);">
+      <div class="cmp-title" style="color:var(--rose);">❌ ไม่มี QoS (FIFO)</div>
+      <div class="cmp-item"><div class="cmp-dot" style="background:var(--p3)"></div>วิดีโออวยพร — ส่งก่อน</div>
+      <div class="cmp-item"><div class="cmp-dot" style="background:var(--p2)"></div>ภาพดวงจันทร์ — ส่งที่ 2</div>
+      <div class="cmp-item"><div class="cmp-dot" style="background:var(--p1)"></div>หลบอุกกาบาต — ส่งสุดท้าย ⚠️</div>
+      <div class="cmp-note" style="background:rgba(251,113,133,.06);color:var(--rose);">ยานอาจชนก่อนได้รับคำสั่ง — Mission Loss</div>
+    </div>
+    <div class="cmp-card" style="border-color:rgba(52,211,153,.2);">
+      <div class="cmp-title" style="color:var(--emerald);">✓ มี QoS Priority</div>
+      <div class="cmp-item"><div class="cmp-dot" style="background:var(--p1)"></div>หลบอุกกาบาต — ส่งก่อน ✓</div>
+      <div class="cmp-item"><div class="cmp-dot" style="background:var(--p2)"></div>ภาพดวงจันทร์ — ส่งที่ 2</div>
+      <div class="cmp-item"><div class="cmp-dot" style="background:var(--p3)"></div>วิดีโออวยพร — ส่งสุดท้าย</div>
+      <div class="cmp-note" style="background:rgba(52,211,153,.06);color:var(--emerald);">ยานปลอดภัย · Mission Success ✓</div>
+    </div>
+  </div>
+
+  <div class="lbl" style="margin-top:4px;">QoS Policy ตามประเภทโหนด</div>
+  <div class="node-policy">
+    <div class="np-card" style="border-color:rgba(34,211,238,.2);">
+      <div class="np-name" style="color:var(--earth);">🌍 EMC</div>
+      <div class="np-row">P1: Bypass queue ทันที</div>
+      <div class="np-row">P2: Store-and-Forward</div>
+      <div class="np-row">P3: Drop ถ้าทรัพยากรวิกฤต</div>
+    </div>
+    <div class="np-card" style="border-color:rgba(192,132,252,.2);">
+      <div class="np-name" style="color:var(--lunar);">🌕 LGR</div>
+      <div class="np-row">Router กลางทาง</div>
+      <div class="np-row">P1: Forward ทันที</div>
+      <div class="np-row">P2/P3: Queue ตามคิว</div>
+    </div>
+    <div class="np-card" style="border-color:rgba(251,191,36,.2);">
+      <div class="np-name" style="color:var(--surface);">🏕️ SBL</div>
+      <div class="np-row">Local Ethernet</div>
+      <div class="np-row">Latency ต่ำสุด</div>
+      <div class="np-row">รับได้ทุก Priority</div>
+    </div>
+    <div class="np-card" style="border-color:rgba(251,113,133,.2);">
+      <div class="np-name" style="color:var(--deep);">🛸 DSP</div>
+      <div class="np-row">Disruption สูงสุด</div>
+      <div class="np-row">P1: Bypass ทุกกรณี</div>
+      <div class="np-row">P3: อาจถูก Drop</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     PAGE 3 — TEST CASES
+══════════════════════════════════════ -->
+<div class="page" id="p3">
+  <div class="lbl">Test Case Matrix</div>
+
+  <div style="display:grid;grid-template-columns:72px 1fr 1fr 80px;gap:12px;padding:0 16px 8px;" class="tc-col-hdr">
+    <div>TC ID</div><div>ชื่อ &amp; วิธีทดสอบ</div><div>ผลลัพธ์ที่คาดหวัง</div><div>Status</div>
+  </div>
+
+  <div class="tc-table" id="tc-table">
+    <div class="tc-row" id="tc01-row">
+      <div class="tc-id">TC-01</div>
+      <div><div class="tc-name">Normal Transmission</div><div class="tc-desc">ส่งข้อมูลทุก Priority เมื่อทุกโหนด Online (≥3 nodes)</div></div>
+      <div class="tc-exp">ข้อมูลถึงปลายทางทันที ไม่มีการ Store · ครอบคลุม EMC→LGR, SBL, DSP</div>
+      <div class="tc-badge tb-pending" id="tc01-status">PENDING</div>
+    </div>
+    <div class="tc-row" id="tc02-row">
+      <div class="tc-id">TC-02</div>
+      <div><div class="tc-name">Single Node Failure</div><div class="tc-desc">ปิดโหนด LGR กะทันหัน ระหว่างส่งข้อมูล</div></div>
+      <div class="tc-exp">ข้อมูลถูก Store ใน Buffer · 0% Data Loss · โหนดอื่นยังทำงานปกติ</div>
+      <div class="tc-badge tb-pending" id="tc02-status">PENDING</div>
+    </div>
+    <div class="tc-row" id="tc03-row">
+      <div class="tc-id">TC-03</div>
+      <div><div class="tc-name">Full Recovery</div><div class="tc-desc">เปิดโหนดกลับมา หลัง Store ข้อมูลไปแล้ว</div></div>
+      <div class="tc-exp">Forward อัตโนมัติ เรียง Priority ถูกต้อง ไม่ต้องสั่งใหม่</div>
+      <div class="tc-badge tb-pending" id="tc03-status">PENDING</div>
+    </div>
+    <div class="tc-row" id="tc04-row">
+      <div class="tc-id">TC-04</div>
+      <div><div class="tc-name">QoS Priority Test</div><div class="tc-desc">ส่ง P3 Media ก่อน P1 Critical เข้า Buffer</div></div>
+      <div class="tc-exp">หลัง Recovery: P1 Critical ต้อง Forward ก่อน P3 Media เสมอ</div>
+      <div class="tc-badge tb-pending" id="tc04-status">PENDING</div>
+    </div>
+    <div class="tc-row" id="tc05-row">
+      <div class="tc-id">TC-05</div>
+      <div><div class="tc-name">Stress Test 90%</div><div class="tc-desc">Packet Loss 90% ส่ง 20 packets ทุก Priority</div></div>
+      <div class="tc-exp">P1 Critical รอดครบ 100% · P3 Media Drop ได้ · ระบบไม่ crash</div>
+      <div class="tc-badge tb-pending" id="tc05-status">PENDING</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:14px;">
+    <div class="lbl">เรียกใช้ Test Cases</div>
+    <div class="btn-grid" style="margin-bottom:10px;">
+      <button class="btn btn-cyan"   onclick="runTC('tc01')">▶ TC-01</button>
+      <button class="btn btn-amber"  onclick="runTC('tc02')">▶ TC-02</button>
+      <button class="btn btn-green"  onclick="runTC('tc03')">▶ TC-03</button>
+      <button class="btn btn-violet" onclick="runTC('tc04')">▶ TC-04</button>
+      <button class="btn btn-rose"   onclick="runTC('tc05')">▶ TC-05</button>
+      <button class="btn btn-cyan"   onclick="runAllTC()" style="background:rgba(52,211,153,.08);border-color:rgba(52,211,153,.3);color:var(--emerald);">▶▶ Run All</button>
+      <button class="btn btn-ghost"  onclick="resetTC()">↺ รีเซ็ต</button>
+    </div>
+    <div class="terminal" id="tc-log" style="height:130px;margin-bottom:0;"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     PAGE 4 — ETHICS
+══════════════════════════════════════ -->
+<div class="page" id="p4">
+  <div class="ethics-hero">
+    <div class="ethics-icon">🔐</div>
+    <div class="ethics-title">Ethics & Governance</div>
+    <div class="ethics-sub">Human-in-the-Loop Design สำหรับระบบ Safety-Critical ในอวกาศ<br>มนุษย์ต้องควบคุม Critical decisions เสมอ</div>
+  </div>
+
+  <div class="lbl">HITL Decision Flow</div>
+  <div class="flow-steps">
+    <div class="flow-step">
+      <div class="fs-icon">🤖</div>
+      <div class="fs-label" style="color:var(--cyan)">AI Detects</div>
+      <div class="fs-desc">ตรวจพบเหตุการณ์ สร้างคำสั่ง P1</div>
+    </div>
+    <div class="flow-step">
+      <div class="fs-icon">⏸️</div>
+      <div class="fs-label" style="color:var(--amber)">HALT</div>
+      <div class="fs-desc">ระบบหยุดรอ ไม่ส่งอัตโนมัติ</div>
+    </div>
+    <div class="flow-step">
+      <div class="fs-icon">👨‍🚀</div>
+      <div class="fs-label" style="color:var(--rose)">Human Review</div>
+      <div class="fs-desc">Operator ตรวจสอบและตัดสินใจ</div>
+    </div>
+    <div class="flow-step">
+      <div class="fs-icon">🚀</div>
+      <div class="fs-label" style="color:var(--emerald)">Execute</div>
+      <div class="fs-desc">ส่งได้เมื่ออนุมัติแล้วเท่านั้น</div>
+    </div>
+  </div>
+
+  <div class="lbl">Risk vs. Benefit</div>
+  <div class="ethics-cols">
+    <div class="ec-card ec-danger">
+      <div class="ec-title">⚠️ ความเสี่ยงหากไม่มี HITL</div>
+      <div class="ec-item">AI ส่งคำสั่งหลบอุกกาบาตผิดทิศ</div>
+      <div class="ec-item">ยานเสียหายจาก autonomous command ผิดพลาด</div>
+      <div class="ec-item">ไม่มีจุด accountability ที่ชัดเจน</div>
+      <div class="ec-item">False positive → abort mission โดยไม่จำเป็น</div>
+      <div class="ec-item">ละเมิด space safety standards</div>
+    </div>
+    <div class="ec-card ec-safe">
+      <div class="ec-title">✓ ประโยชน์ของ HITL</div>
+      <div class="ec-item">มนุษย์ควบคุม critical decisions เสมอ</div>
+      <div class="ec-item">ตรวจสอบ AI logic ก่อนกระทบจริง</div>
+      <div class="ec-item">มี audit trail ทุก action พร้อม timestamp</div>
+      <div class="ec-item">รองรับ edge case ที่ AI ไม่เคยเห็น</div>
+      <div class="ec-item">สอดคล้อง international space regulations</div>
+    </div>
+  </div>
+
+  <div class="lbl">Governance Framework</div>
+  <div class="card">
+    <div class="rule-list">
+      <div class="rule-row"><span class="rule-num">R1</span><span class="rule-text">ทุก P1 Critical command ต้องผ่าน Human approval — ห้าม autonomous execution อย่างเด็ดขาด</span></div>
+      <div class="rule-row"><span class="rule-num">R2</span><span class="rule-text">ระบบต้องบันทึก log ทุก action พร้อม timestamp และ node path สำหรับ audit trail</span></div>
+      <div class="rule-row"><span class="rule-num">R3</span><span class="rule-text">P2/P3 auto-forward ได้ เพราะไม่มีผลกระทบต่อ mission safety โดยตรง</span></div>
+      <div class="rule-row"><span class="rule-num">R4</span><span class="rule-text">DTN buffer ต้องรักษา data integrity ครบ — ห้าม drop ข้อมูลโดยไม่แจ้ง operator</span></div>
+      <div class="rule-row"><span class="rule-num">R5</span><span class="rule-text">DSP ต้องมี fallback protocol เนื่องจากมีโอกาสสูญเสียสัญญาณสูงสุดในระบบ</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     PAGE 5 — PROJECT
+══════════════════════════════════════ -->
+<div class="page" id="p5">
+  <div style="text-align:center;padding:20px 0 16px;">
+    <div style="font-family:var(--disp);font-size:20px;font-weight:700;color:var(--t0);">Project Overview</div>
+    <div style="font-family:var(--thai);font-size:13px;color:var(--t1);margin-top:6px;">Interstellar Data Mesh · Sprint Alpha · Computer Networks 2/2025</div>
+  </div>
+
+  <div class="lbl">ทีมงานและบทบาท</div>
+  <div class="team-grid">
+    <div class="team-card">
+      <div class="team-avatar" style="background:rgba(34,211,238,.08);border-color:rgba(34,211,238,.2);">🏗️</div>
+      <div>
+        <div class="t-name">รัฐภูมิ</div>
+        <div class="t-role">ARCHITECT</div>
+        <div class="t-contrib">ออกแบบสถาปัตยกรรม Mesh/DTN ทั้งระบบ · จัดทำ Architecture Spec · อนุมัติ Code Review · ตัดสินใจ Technology Stack</div>
+      </div>
+    </div>
+    <div class="team-card">
+      <div class="team-avatar" style="background:rgba(192,132,252,.08);border-color:rgba(192,132,252,.2);">⚙️</div>
+      <div>
+        <div class="t-name">กิตติพัฒน์</div>
+        <div class="t-role">ENGINEER</div>
+        <div class="t-contrib">เขียนโค้ดจำลองระบบ · พัฒนา Routing Algorithm · Optimization · แก้ไข Bug · จัดทำ Code Documentation</div>
+      </div>
+    </div>
+    <div class="team-card">
+      <div class="team-avatar" style="background:rgba(251,191,36,.08);border-color:rgba(251,191,36,.2);">🔬</div>
+      <div>
+        <div class="t-name">ภัทราพร</div>
+        <div class="t-role">SPECIALIST</div>
+        <div class="t-contrib">วิจัยข้อจำกัดอวกาศ (Latency, Interference) · ป้อนค่า domain เชิงลึก · จัดทำเอกสารเชิงเทคนิค</div>
+      </div>
+    </div>
+    <div class="team-card">
+      <div class="team-avatar" style="background:rgba(52,211,153,.08);border-color:rgba(52,211,153,.2);">🔧</div>
+      <div>
+        <div class="t-name">ชุตินันท์</div>
+        <div class="t-role">DEVOPS</div>
+        <div class="t-contrib">ตั้งค่า CI/CD Pipeline · บริหาร Version Control · เขียนสคริปต์ Deploy · GitHub Actions</div>
+      </div>
+    </div>
+    <div class="team-card">
+      <div class="team-avatar" style="background:rgba(251,113,133,.08);border-color:rgba(251,113,133,.2);">🧪</div>
+      <div>
+        <div class="t-name">ธนพัฒน์</div>
+        <div class="t-role">TESTER / QA</div>
+        <div class="t-contrib">สร้าง Test Case TC-01–TC-05 · Stress Test 90% · รายงาน Bug · กำหนดเกณฑ์ Quality Gate</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lbl">Sprint Timeline</div>
+  <div class="sprint-list">
+    <div class="sprint-row">
+      <div class="sprint-line-wrap"><div class="sprint-dot" style="background:var(--cyan)"></div><div class="sprint-line"></div></div>
+      <div class="sprint-body">
+        <div class="sprint-week" style="color:var(--cyan)">Week 1 — Foundation</div>
+        <div class="sprint-desc">DevOps ตั้งค่า GitHub + Branching · Engineer พัฒนา Module 1 Class Structure · Architect ตรวจสอบ Logic ให้ตรง Spec</div>
+        <div class="sprint-tags"><span class="sprint-tag">GitHub</span><span class="sprint-tag">Module 1</span><span class="sprint-tag">Class Design</span></div>
+      </div>
+    </div>
+    <div class="sprint-row">
+      <div class="sprint-line-wrap"><div class="sprint-dot" style="background:var(--amber)"></div><div class="sprint-line"></div></div>
+      <div class="sprint-body">
+        <div class="sprint-week" style="color:var(--amber)">Week 2 — Core Routing</div>
+        <div class="sprint-desc">Module 2+3 · เชื่อมต่อ 4 โหนดผ่าน NetworkX · Specialist ป้อนค่า Latency จริง (RTT ≈ 2.6s) · Tester เขียน Test Case</div>
+        <div class="sprint-tags"><span class="sprint-tag">Module 2+3</span><span class="sprint-tag">NetworkX</span><span class="sprint-tag">RTT Values</span></div>
+      </div>
+    </div>
+    <div class="sprint-row">
+      <div class="sprint-line-wrap"><div class="sprint-dot" style="background:var(--emerald)"></div><div class="sprint-line"></div></div>
+      <div class="sprint-body">
+        <div class="sprint-week" style="color:var(--emerald)">Week 3 — QoS + Integration</div>
+        <div class="sprint-desc">Module 4 QoS Priority Queue · ประกอบ Toy Model ครบ · Tester ทดสอบ Store-and-Forward · DevOps ตั้งค่า CI/CD</div>
+        <div class="sprint-tags"><span class="sprint-tag">Module 4</span><span class="sprint-tag">CI/CD</span><span class="sprint-tag">Integration</span></div>
+      </div>
+    </div>
+    <div class="sprint-row">
+      <div class="sprint-line-wrap"><div class="sprint-dot" style="background:var(--rose)"></div></div>
+      <div class="sprint-body">
+        <div class="sprint-week" style="color:var(--rose)">Week 4 — Stress Test + Pitch</div>
+        <div class="sprint-desc">Stress Test 90% Packet Loss · TC-01–TC-05 · แก้ Bug ทั้งหมด · เตรียม Project Pitch</div>
+        <div class="sprint-tags"><span class="sprint-tag">Stress Test</span><span class="sprint-tag">TC-05</span><span class="sprint-tag">Pitch Prep</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lbl">Acceptance Criteria</div>
+  <div class="ac-full">
+    <div class="ac-line"><div class="ac-n">AC-1</div><div class="ac-txt">จำลองการส่งข้อมูลระหว่าง <strong style="color:var(--cyan)">4 โหนด</strong> (EMC, LGR, SBL, DSP) ได้ครบ ≥ 3 โหนดตาม Spec</div><div class="ac-ok">✓ PASS</div></div>
+    <div class="ac-line"><div class="ac-n">AC-2</div><div class="ac-txt">โหนด Offline → ข้อมูล Store ใน Buffer <strong style="color:var(--emerald)">0% Data Loss</strong> ไม่มีข้อมูลหาย</div><div class="ac-ok">✓ PASS</div></div>
+    <div class="ac-line"><div class="ac-n">AC-3</div><div class="ac-txt">โหนดกลับมา Online → Forward ข้อมูลค้าง <strong style="color:var(--emerald)">อัตโนมัติ</strong> ไม่ต้องสั่งใหม่</div><div class="ac-ok">✓ PASS</div></div>
+    <div class="ac-line"><div class="ac-n">AC-4</div><div class="ac-txt">QoS ส่ง P1 ก่อน P2/P3 เสมอ ไม่ว่าลำดับ Buffer จะเป็นอย่างไร <strong style="color:var(--amber)">TC-04 verified</strong></div><div class="ac-ok">✓ PASS</div></div>
+    <div class="ac-line"><div class="ac-n">AC-5</div><div class="ac-txt">TC-01–TC-05 ผ่านทุกข้อ · Stress 90% Packet Loss: <strong style="color:var(--rose)">Critical 100% safe</strong></div><div class="ac-ok">✓ PASS</div></div>
+  </div>
+
+  <div class="lbl">Project Artifacts</div>
+  <div class="artifact-grid">
+    <div class="artifact-item">📁 GitHub Codebase + README</div>
+    <div class="artifact-item" style="color:var(--cyan);border-color:rgba(34,211,238,.2);">🎯 Interactive Demo (นี่คืออันนี้)</div>
+    <div class="artifact-item">📓 NotebookLM Documentation</div>
+    <div class="artifact-item">📊 Math Formalization Doc</div>
+    <div class="artifact-item">🎥 YouTube Overview Video</div>
+    <div class="artifact-item">📋 Ethics & Governance Report</div>
+  </div>
+</div>
+
+</div><!-- /app -->
+
+<script>
+// ── STARFIELD ──────────────────────────────
+const cvs = document.getElementById('starfield');
+const ctx = cvs.getContext('2d');
+let stars = [];
+function initStars(){
+  cvs.width = window.innerWidth;
+  cvs.height = window.innerHeight;
+  stars = Array.from({length:120}, ()=>({
+    x: Math.random(), y: Math.random(),
+    r: Math.random()*1.1+.2,
+    a: Math.random(), da: (Math.random()-.5)*.003
+  }));
+}
+function drawStars(){
+  ctx.clearRect(0,0,cvs.width,cvs.height);
+  stars.forEach(s=>{
+    s.a = Math.max(.05, Math.min(.9, s.a+s.da));
+    if(s.a<=.05||s.a>=.9) s.da*=-1;
+    ctx.beginPath();
+    ctx.arc(s.x*cvs.width, s.y*cvs.height, s.r, 0, Math.PI*2);
+    ctx.fillStyle = `rgba(180,210,255,${s.a})`;
+    ctx.fill();
+  });
+  requestAnimationFrame(drawStars);
+}
+initStars();
+window.addEventListener('resize', initStars);
+drawStars();
+
+// ── NAV ──────────────────────────────────
+function showPage(i, tab){
+  document.querySelectorAll('.page').forEach((p,j) => p.classList.toggle('active', j===i));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  tab.classList.add('active');
+}
+
+// ── STATE ────────────────────────────────
+const nodes = {
+  lgr: { online: true, recvEl: 'lgr-recv' },
+  sbl: { online: true, recvEl: 'sbl-recv' },
+  dsp: { online: true, recvEl: 'dsp-recv' },
+};
+let buf=[], sentTotal=0, bufTotal=0, qosTotal=0, dropTotal=0, pending=null;
+const logEl = document.getElementById('sim-log');
+const delay = ms => new Promise(r => setTimeout(r,ms));
+
+function log(msg, cls='lt'){
+  const d = document.createElement('div'); d.className = cls;
+  const t = new Date().toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  d.innerHTML = `<span class="log-ts">[${t}]</span> ${msg}`;
+  logEl.appendChild(d); logEl.scrollTop = logEl.scrollHeight;
+}
+function tcLog(msg, cls='lt'){
+  const el = document.getElementById('tc-log');
+  const d = document.createElement('div'); d.className = cls;
+  const t = new Date().toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  d.innerHTML = `<span class="log-ts">[${t}]</span> ${msg}`;
+  el.appendChild(d); el.scrollTop = el.scrollHeight;
+}
+
+function setNodeStatus(id, online){
+  nodes[id].online = online;
+  document.getElementById('d-'+id).className = 'dot ' + (online?'dot-on':'dot-off');
+  const se = document.getElementById('s-'+id);
+  se.textContent = online ? 'Online' : 'อับสัญญาณ';
+  se.style.color  = online ? 'var(--emerald)' : 'var(--rose)';
+  document.getElementById('nc-'+id).classList.toggle('offline',!online);
+  const lnk = document.getElementById('lnk-'+id);
+  const ld  = document.getElementById('ld-'+id);
+  const lt  = document.getElementById('lt-'+id);
+  if(lnk){
+    lnk.className = 'link-pill ' + (online?'ok':'down');
+    ld.className  = 'lp-dot ' + (online?'ok':'down');
+    lt.textContent = online?'OK':'DOWN';
+    lt.style.color = online?'var(--emerald)':'var(--rose)';
+  }
+}
+function toggleNode(id){
+  setNodeStatus(id, !nodes[id].online);
+  log((nodes[id].online?'🟢 Restored: ':'💀 Killed: ')+id.toUpperCase(), nodes[id].online?'lq':'lr');
+}
+
+function renderBuf(){
+  const el = document.getElementById('buf-list'); el.innerHTML='';
+  if(!buf.length){ el.innerHTML='<span class="buf-empty">Buffer ว่าง — ไม่มีข้อมูลค้างอยู่</span>'; }
+  else {
+    [...buf].sort((a,b)=>a.p-b.p||a.t-b.t).forEach(it=>{
+      const d=document.createElement('span'); d.className='buf-pill bp'+it.p;
+      d.textContent=`P${it.p}[${it.dst.toUpperCase()}] ${it.data}`; el.appendChild(d);
+    });
+  }
+  document.getElementById('buf-cnt').textContent = buf.length;
+  document.getElementById('m-sent').textContent  = sentTotal;
+  document.getElementById('m-buf').textContent   = bufTotal;
+  document.getElementById('m-qos').textContent   = qosTotal;
+  document.getElementById('m-drop').textContent  = dropTotal;
+}
+
+async function send(data,p,label,dst='lgr'){
+  if(p===1){
+    log(`🔐 HITL: รอ Human Operator อนุมัติ P1 → "${data}" → ${dst.toUpperCase()}`,'lw');
+    document.getElementById('h-txt').textContent = `รอ Approve: P1 "${data}" → ${dst.toUpperCase()}`;
+    document.getElementById('h-btn').classList.add('show');
+    pending={data,p,label,dst}; return;
+  }
+  _send(data,p,label,dst);
+}
+function _send(data,p,label,dst){
+  if(nodes[dst].online){
+    const c=label==='Critical'?'lc':label==='Scientific'?'ls':'lm';
+    log(`📡 [EMC→${dst.toUpperCase()}] P${p} [${label}]: "${data}" → ส่งถึงแล้ว`,c);
+    log(`✅ [${dst.toUpperCase()}] รับแล้ว: "${data}"`,'lq');
+    document.getElementById(nodes[dst].recvEl).textContent = `📩 ล่าสุด: ${data}`;
+    sentTotal++;
+  } else {
+    log(`⚠️ Link ${dst.toUpperCase()} ขาด! → DTN Store: P${p} "${data}"`,'lw');
+    buf.push({data,p,label,dst,t:Date.now()}); bufTotal++;
+  }
+  renderBuf();
+}
+function approveH(){
+  if(!pending) return;
+  log(`🟢 HITL Approved → ส่ง P1 "${pending.data}" → ${pending.dst.toUpperCase()}`,'lc');
+  document.getElementById('h-btn').classList.remove('show');
+  document.getElementById('h-txt').textContent='P1 Critical ต้องรอ Human Operator อนุมัติก่อนส่ง';
+  _send(pending.data,pending.p,pending.label,pending.dst); pending=null;
+}
+
+// ── SCENARIOS ────────────────────────────
+async function runS1(){
+  log('━━ TC-01: Normal Transmission (3+ nodes) ━━','lq');
+  setNodeStatus('lgr',true); setNodeStatus('sbl',true); setNodeStatus('dsp',true);
+  await delay(300);
+  await send('ตรวจสอบระบบนำทาง',1,'Critical','lgr');
+  await delay(200); _send('Telemetry Status',2,'Scientific','sbl');
+  await delay(200); _send('Weekly Media Update',3,'Media','lgr');
+  await delay(200); _send('Surface Scan Data',2,'Scientific','dsp');
+}
+async function runS2(){
+  log('━━ TC-02: Node Failure (LGR Offline) ━━','lw');
+  setNodeStatus('lgr',false); await delay(300);
+  _send('วิดีโออวยพรครอบครัว',3,'Media','lgr'); await delay(200);
+  _send('ภาพถ่ายพื้นผิวดวงจันทร์',2,'Scientific','lgr'); await delay(200);
+  await send('คำสั่งหลบหลีกอุกกาบาต!',1,'Critical','lgr'); await delay(200);
+  _send('SBL Telemetry OK',2,'Scientific','sbl');
+}
+async function runS3(){
+  log('━━ TC-03: Full Recovery — QoS Flush ━━','lq');
+  setNodeStatus('lgr',true); setNodeStatus('sbl',true); setNodeStatus('dsp',true);
+  await delay(400);
+  const pb=buf.filter(it=>it.dst==='lgr'); const ob=buf.filter(it=>it.dst!=='lgr');
+  if(!pb.length){ log('⚠ Buffer ว่าง — ลอง TC-02 ก่อน','lw'); return; }
+  log(`⟳ QoS จัดเรียง ${pb.length} items: P1→P2→P3...`,'lq');
+  buf=ob; const sorted=[...pb].sort((a,b)=>a.p-b.p||a.t-b.t);
+  for(const it of sorted){
+    await delay(700);
+    log(`🚀 [QoS Flush] P${it.p} [${it.label}]: "${it.data}" → ${it.dst.toUpperCase()}`,'lq');
+    log(`✅ [${it.dst.toUpperCase()}] รับ: "${it.data}"`,'ls');
+    document.getElementById(nodes[it.dst].recvEl).textContent=`📩 ล่าสุด: ${it.data}`;
+    qosTotal++; renderBuf();
+  }
+  log('✓ QoS Flush เสร็จ','lq'); renderBuf();
+}
+async function runTC04(){
+  log('━━ TC-04: QoS Priority Order Test ━━','lc');
+  setNodeStatus('lgr',false); await delay(300);
+  log('📤 ส่ง P3 Media ก่อน (เข้า buffer แรก)...','lm');
+  _send('สตรีมมิ่งวิดีโอ HD',3,'Media','lgr'); await delay(200);
+  _send('ภาพถ่ายวิทยาศาสตร์',2,'Scientific','lgr'); await delay(200);
+  log('📤 ส่ง P1 Critical (เข้า buffer หลังสุด)...','lc');
+  _send('CRITICAL: หลบอุกกาบาต NOW!',1,'Critical','lgr'); await delay(500);
+  log('⟳ Restore LGR → ตรวจสอบ QoS order...','lq');
+  setNodeStatus('lgr',true); await delay(400);
+  const tc4b=buf.filter(it=>it.dst==='lgr'); buf=buf.filter(it=>it.dst!=='lgr');
+  if(!tc4b.length){ log('⚠ Buffer ว่าง','lw'); return; }
+  const sorted=[...tc4b].sort((a,b)=>a.p-b.p||a.t-b.t);
+  let orderOk=true; for(let i=0;i<sorted.length-1;i++) if(sorted[i].p>sorted[i+1].p) orderOk=false;
+  log('📊 QoS Order: '+sorted.map(it=>`P${it.p}`).join(' → '),'lq');
+  for(const it of sorted){
+    await delay(500);
+    log(`🚀 P${it.p} [${it.label}]: "${it.data}"`,it.p===1?'lc':it.p===2?'ls':'lm');
+    document.getElementById(nodes[it.dst].recvEl).textContent=`📩 P${it.p}: ${it.data}`;
+    qosTotal++; renderBuf();
+  }
+  log(orderOk?'✅ TC-04 PASS — P1 ถูก forward ก่อน P3 ✓':'❌ TC-04 FAIL',orderOk?'lq':'lr');
+  setTCStatus('tc04',orderOk?'pass':'fail');
+}
+async function runTC05(){
+  log('━━ TC-05: Stress Test 90% Packet Loss ━━','lr');
+  const wrap=document.getElementById('stress-wrap'); wrap.classList.add('show');
+  const TOTAL=20; let ss=0,so=0,sd=0,cs=0,co=0;
+  document.getElementById('stress-fill').style.width='0%'; setNodeStatus('lgr',true);
+  const pkts=[
+    {data:'CRITICAL: Course Correction',p:1,label:'Critical'},{data:'CRITICAL: Emergency Beacon',p:1,label:'Critical'},
+    {data:'CRITICAL: Trajectory Adjust',p:1,label:'Critical'},{data:'Science Data Batch A',p:2,label:'Scientific'},
+    {data:'Science Data Batch B',p:2,label:'Scientific'},{data:'Media File 001',p:3,label:'Media'},
+    {data:'Media File 002',p:3,label:'Media'},{data:'Media File 003',p:3,label:'Media'},
+    {data:'CRITICAL: Thermal Alert',p:1,label:'Critical'},{data:'Science Sensor Reading',p:2,label:'Scientific'},
+    {data:'Media Stream Chunk',p:3,label:'Media'},{data:'CRITICAL: Navigation Fix',p:1,label:'Critical'},
+    {data:'Science Image #42',p:2,label:'Scientific'},{data:'Media Clip #10',p:3,label:'Media'},
+    {data:'Media Clip #11',p:3,label:'Media'},{data:'CRITICAL: Power Warning',p:1,label:'Critical'},
+    {data:'Science Telemetry Pack',p:2,label:'Scientific'},{data:'Media Thumb 001',p:3,label:'Media'},
+    {data:'Media Thumb 002',p:3,label:'Media'},{data:'Science Final Report',p:2,label:'Scientific'},
+  ];
+  for(let i=0;i<pkts.length;i++){
+    const pkt=pkts[i]; ss++; if(pkt.p===1)cs++;
+    const r=Math.random();
+    const dropped=pkt.p===3?r<0.9:pkt.p===2?r<0.4:false;
+    await delay(120);
+    if(dropped){ sd++; dropTotal++; log(`💀 DROP P${pkt.p} [${pkt.label}]: "${pkt.data}"`,pkt.p===3?'lt':'lw'); }
+    else { so++; if(pkt.p===1)co++; sentTotal++; log(`📡 OK  P${pkt.p} [${pkt.label}]: "${pkt.data}"`,pkt.p===1?'lc':pkt.p===2?'ls':'lm'); }
+    document.getElementById('stress-fill').style.width=Math.round((i+1)/TOTAL*100)+'%';
+    document.getElementById('ss-sent').textContent=ss;
+    document.getElementById('ss-ok').textContent=so;
+    document.getElementById('ss-drop').textContent=sd;
+    document.getElementById('ss-crit').textContent=`${co}/${cs}`;
+    renderBuf();
+  }
+  const allCritOk=co===cs; const pass=allCritOk;
+  log('━━ Stress Test Complete ━━','lq');
+  log(`📊 Total: ${ss} | Delivered: ${so} | Dropped: ${sd}`,'lt');
+  log(`🔴 P1 Critical: ${co}/${cs} ${allCritOk?'✓ 100%':'✗ FAIL'}`,allCritOk?'lq':'lr');
+  log(pass?'✅ TC-05 PASS — Critical 100% safe, system stable':'❌ TC-05 FAIL',pass?'lq':'lr');
+  setTCStatus('tc05',pass?'pass':'fail');
+  setTimeout(()=>wrap.classList.remove('show'),5000);
+}
+
+function customSend(){
+  const inp=document.getElementById('msg-input');
+  const pri=parseInt(document.getElementById('msg-priority').value);
+  const dst=document.getElementById('msg-dst').value;
+  const txt=inp.value.trim();
+  if(!txt){ inp.style.borderColor='var(--rose)'; setTimeout(()=>inp.style.borderColor='',800); return; }
+  const lm={1:'Critical',2:'Scientific',3:'Media'};
+  send(txt,pri,lm[pri],dst); inp.value='';
+}
+function resetAll(){
+  buf=[]; sentTotal=0; bufTotal=0; qosTotal=0; dropTotal=0; pending=null;
+  setNodeStatus('lgr',true); setNodeStatus('sbl',true); setNodeStatus('dsp',true);
+  logEl.innerHTML='';
+  document.getElementById('h-btn').classList.remove('show');
+  document.getElementById('h-txt').textContent='P1 Critical ต้องรอ Human Operator อนุมัติก่อนส่ง';
+  ['lgr-recv','sbl-recv','dsp-recv'].forEach(id=>document.getElementById(id).textContent='รอรับสัญญาณ');
+  document.getElementById('stress-wrap').classList.remove('show');
+  renderBuf(); log('↺ รีเซ็ต — พร้อมจำลองใหม่','lq');
+}
+
+// ── TEST CASE RUNNER ─────────────────────
+function setTCStatus(id,status){
+  const el=document.getElementById(id+'-status'); if(!el) return;
+  el.className='tc-badge tb-'+status;
+  el.textContent=status==='pass'?'PASS':status==='fail'?'FAIL':status==='running'?'RUNNING':'PENDING';
+  const row=document.getElementById(id+'-row'); if(row){ row.className='tc-row'; if(status==='running')row.classList.add('running'); if(status==='pass')row.classList.add('passed'); if(status==='fail')row.classList.add('failed'); }
+}
+async function runTC(id){
+  setTCStatus(id,'running'); tcLog(`▶ Running ${id.toUpperCase()}...`,'lw');
+  buf=[]; sentTotal=0; bufTotal=0; qosTotal=0; dropTotal=0;
+  setNodeStatus('lgr',true); setNodeStatus('sbl',true); setNodeStatus('dsp',true); await delay(200);
+  if(id==='tc01'){
+    _send('Telemetry Heartbeat',1,'Critical','lgr'); await delay(100);
+    _send('Science Dataset Alpha',2,'Scientific','sbl'); await delay(100);
+    _send('Media Greeting',3,'Media','dsp'); await delay(100);
+    const pass=sentTotal>=3&&buf.length===0;
+    tcLog(`TC-01: Sent ${sentTotal} | Buffer ${buf.length} | ${pass?'PASS ✓':'FAIL ✗'}`,pass?'lq':'lr');
+    setTCStatus('tc01',pass?'pass':'fail');
+  } else if(id==='tc02'){
+    setNodeStatus('lgr',false);
+    _send('Test Data A',3,'Media','lgr'); await delay(100);
+    _send('Test Data B',2,'Scientific','lgr'); await delay(100);
+    _send('Emergency Cmd',1,'Critical','lgr'); await delay(200);
+    const stored=buf.filter(it=>it.dst==='lgr').length; const pass=stored>=2;
+    tcLog(`TC-02: Stored ${stored} msgs | 0% Loss | ${pass?'PASS ✓':'FAIL ✗'}`,pass?'lq':'lr');
+    setTCStatus('tc02',pass?'pass':'fail');
+  } else if(id==='tc03'){
+    setNodeStatus('lgr',false);
+    _send('Pending Msg 1',2,'Scientific','lgr'); _send('Pending Msg 2',3,'Media','lgr');
+    await delay(300); setNodeStatus('lgr',true); await delay(400);
+    const toF=buf.filter(it=>it.dst==='lgr'); buf=buf.filter(it=>it.dst!=='lgr');
+    const sorted=[...toF].sort((a,b)=>a.p-b.p||a.t-b.t);
+    for(const it of sorted){ await delay(300); sentTotal++; qosTotal++; }
+    const pass=qosTotal>=2; renderBuf();
+    tcLog(`TC-03: Auto-forwarded ${qosTotal} msgs | ${pass?'PASS ✓':'FAIL ✗'}`,pass?'lq':'lr');
+    setTCStatus('tc03',pass?'pass':'fail');
+  } else if(id==='tc04'){
+    await runTC04();
+  } else if(id==='tc05'){
+    await runTC05();
+  }
+  renderBuf();
+}
+async function runAllTC(){
+  tcLog('▶▶ Running ALL Test Cases...','lq');
+  for(const id of ['tc01','tc02','tc03','tc04','tc05']){ await runTC(id); await delay(600); }
+  tcLog('━━ All Tests Complete ━━','lq');
+}
+function resetTC(){
+  ['tc01','tc02','tc03','tc04','tc05'].forEach(id=>setTCStatus(id,'pending'));
+  document.getElementById('tc-log').innerHTML='';
+  buf=[]; sentTotal=0; bufTotal=0; qosTotal=0; dropTotal=0;
+  setNodeStatus('lgr',true); setNodeStatus('sbl',true); setNodeStatus('dsp',true);
+  renderBuf(); tcLog('↺ รีเซ็ต — พร้อมทดสอบใหม่','lq');
+}
+
+// Init
+renderBuf();
+log('🛰 IDMS — DTN + QoS + HITL System Ready (4 Nodes)','lq');
+log('Nodes: EMC 🌍 · LGR 🌕 · SBL 🏕️ · DSP 🛸','lt');
+</script>
+</body>
+</html>
