@@ -194,7 +194,7 @@ pytest test_idms.py -v
 
 MIT License
 
-# Next-Gen Hybrid Network VDIO
+# Next-Gen Hybrid Network Video
 https://youtu.be/LFwEf5i-hxc
 
 | ชื่อเล่น | รหัสนักศึกษา | ชื่อ–นามสกุล |
